@@ -11,6 +11,9 @@ const CustomThemeProvider = (props) => {
         palette: {
           mode: prefersDarkMode ? "dark" : "light",
         },
+        typography: {
+          fontFamily: 'San Francisco, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
+        },
       }),
     [prefersDarkMode]
   );
