@@ -790,7 +790,13 @@ const UserDashboard = ({ username }) => {
         </Grid>
         
         <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
-          <Button variant="outlined" size="large">
+          <Button 
+            variant="outlined" 
+            size="large"
+            onClick={() => {
+              navigate('/user/all-products');
+            }}          
+           >
             View All Products
           </Button>
         </Box>

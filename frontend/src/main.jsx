@@ -14,6 +14,7 @@ import SignInSide from './components/SignInSide.jsx';
 import SignUpSide from './components/SignUpSide.jsx';
 import AdminDashboard from './components/AdminDashboard.jsx';
 import UserDashboard from './components/UserDashboard.jsx';
+import ProductCatalog from './components/ProductCatalog.jsx';
 
 const router = createBrowserRouter([
   {
@@ -49,6 +50,12 @@ const router = createBrowserRouter([
   {
     path: "/user/dashboard",
     element: <UserDashboard />,
+    errorElement: <ErrorPage />,
+    loader: userLoader,
+  },
+  {
+    path: "/user/all-products",
+    element: <ProductCatalog />,
     errorElement: <ErrorPage />,
     loader: userLoader,
   },
