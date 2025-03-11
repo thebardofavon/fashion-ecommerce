@@ -12,8 +12,6 @@
 //     )
 // };
 
-// export default UserDashboard;
-
 import React, { useState, useEffect } from 'react';
 import { 
   AppBar, 
@@ -38,7 +36,12 @@ import {
   InputBase,
   TextField,
   FormControl,
-  InputAdornment
+  InputAdornment,
+  Fab,
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  Slide
 } from '@mui/material';
 import { 
   ShoppingCart, 
@@ -46,12 +49,13 @@ import {
   Person, 
   Search, 
   Menu as MenuIcon,
-  Close
+  Close,
+  Chat,
+  Send
 } from '@mui/icons-material';
 import { styled, alpha } from '@mui/material/styles';
 import { useNavigate } from "react-router-dom";
 import { KeyboardArrowLeft, KeyboardArrowRight } from '@mui/icons-material';
-
 
 // Mock data for featured products
 const featuredProducts = [
@@ -64,46 +68,6 @@ const featuredProducts = [
   { id: 7, name: "Home Decor Cushion", price: "$24.99", image: "/assets/all-items/image7.png", category: "home" },
   { id: 8, name: "Statement Necklace", price: "$34.99", image: "/assets/all-items/image8.png", category: "accessories" }
 ];
-
-// Styled components for search bar
-const SearchBar = styled('div')(({ theme }) => ({
-  position: 'relative',
-  borderRadius: theme.shape.borderRadius,
-  backgroundColor: alpha(theme.palette.common.white, 0.15),
-  '&:hover': {
-    backgroundColor: alpha(theme.palette.common.white, 0.25),
-  },
-  marginRight: theme.spacing(2),
-  marginLeft: 0,
-  width: '100%',
-  [theme.breakpoints.up('sm')]: {
-    marginLeft: theme.spacing(3),
-    width: 'auto',
-  },
-}));
-
-const SearchIconWrapper = styled('div')(({ theme }) => ({
-  padding: theme.spacing(0, 2),
-  height: '100%',
-  position: 'absolute',
-  pointerEvents: 'none',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-}));
-
-const StyledInputBase = styled(InputBase)(({ theme }) => ({
-  color: 'inherit',
-  '& .MuiInputBase-input': {
-    padding: theme.spacing(1, 1, 1, 0),
-    paddingLeft: `calc(1em + ${theme.spacing(4)})`,
-    transition: theme.transitions.create('width'),
-    width: '100%',
-    [theme.breakpoints.up('md')]: {
-      width: '20ch',
-    },
-  },
-}));
 
 // Hero banner carousel items
 const carouselItems = [
@@ -151,133 +115,257 @@ const carouselItems = [
   }
 ];
 
-// const Carousel = ({ carouselItems }) => {
-//   const [activeStep, setActiveStep] = useState(0);
-//   const maxSteps = carouselItems.length;
+// Styled components for search bar
+const SearchBar = styled('div')(({ theme }) => ({
+  position: 'relative',
+  borderRadius: theme.shape.borderRadius,
+  backgroundColor: alpha(theme.palette.common.white, 0.15),
+  '&:hover': {
+    backgroundColor: alpha(theme.palette.common.white, 0.25),
+  },
+  marginRight: theme.spacing(2),
+  marginLeft: 0,
+  width: '100%',
+  [theme.breakpoints.up('sm')]: {
+    marginLeft: theme.spacing(3),
+    width: 'auto',
+  },
+}));
 
-//   const handleNext = () => {
-//     setActiveStep((prevActiveStep) => 
-//       prevActiveStep === maxSteps - 1 ? 0 : prevActiveStep + 1
-//     );
-//   };
+const SearchIconWrapper = styled('div')(({ theme }) => ({
+  padding: theme.spacing(0, 2),
+  height: '100%',
+  position: 'absolute',
+  pointerEvents: 'none',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+}));
 
-//   const handleBack = () => {
-//     setActiveStep((prevActiveStep) => 
-//       prevActiveStep === 0 ? maxSteps - 1 : prevActiveStep - 1
-//     );
-//   };
+const StyledInputBase = styled(InputBase)(({ theme }) => ({
+  color: 'inherit',
+  '& .MuiInputBase-input': {
+    padding: theme.spacing(1, 1, 1, 0),
+    paddingLeft: `calc(1em + ${theme.spacing(4)})`,
+    transition: theme.transitions.create('width'),
+    width: '100%',
+    [theme.breakpoints.up('md')]: {
+      width: '20ch',
+    },
+  },
+}));
 
-//   const handleStepChange = (step) => {
-//     setActiveStep(step);
-//   };
+// Transition for dialog
+const Transition = React.forwardRef(function Transition(props, ref) {
+  return <Slide direction="up" ref={ref} {...props} />;
+});
 
-//   return (
-//     <Box sx={{ width: '100%', maxWidth: 800, margin: '0 auto', position: 'relative' }}>
-//       {/* <Card>
-//         <CardMedia
-//           component="img"
-//           height="300"
-//           image={carouselItems[activeStep].image}
-//           alt={carouselItems[activeStep].title}
-//         />
-//         <CardContent>
-//           <Typography variant="h5" gutterBottom>
-//             {carouselItems[activeStep].title}
-//           </Typography>
-//           <Typography variant="body2" color="text.secondary">
-//             {carouselItems[activeStep].description}
-//           </Typography>
-//         </CardContent>
-//       </Card> */}
-//       {/* Hero Banner Carousel */}
-//       <Box sx={{ position: 'relative', mb: 4, overflow: 'hidden' }}>
-//         <Box
-//           component="img"
-//           sx={{
-//             width: '100%',
-//             height: { xs: 300, sm: 400 },
-//             objectFit: 'cover',
-//           }}
-//           src={carouselItems[0].image}
-//           alt={carouselItems[0].title}
-//         />
-//         <Box
-//           sx={{
-//             position: 'absolute',
-//             top: 0,
-//             left: 0,
-//             width: '100%',
-//             height: '100%',
-//             display: 'flex',
-//             flexDirection: 'column',
-//             justifyContent: 'center',
-//             alignItems: 'center',
-//             backgroundColor: 'rgba(0,0,0,0)',
-//             color: 'white',
-//             textAlign: 'center',
-//           }}
-//         >
-//         </Box>
-//       </Box>
+// Image Recommender Chatbot Component
+const ImageRecommenderChat = ({ open, onClose }) => {
+  const [query, setQuery] = useState('');
+  const [images, setImages] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [chatHistory, setChatHistory] = useState([
+    { type: 'bot', message: 'Hello! I can help you find similar outfits. Describe what you\'re looking for or upload an image.' }
+  ]);
+
+  const performSearch = async () => {
+    if (!query.trim()) return;
+    
+    setLoading(true);
+    setError(null);
+    
+    // Add user message to chat history
+    const newChatHistory = [...chatHistory, { type: 'user', message: query }];
+    setChatHistory(newChatHistory);
+    
+    try {
+      const response = await fetch('http://localhost:8000/api/search', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: `query=${encodeURIComponent(query)}`
+      });
       
-//       <Box sx={{ 
-//         position: 'absolute', 
-//         top: '50%', 
-//         left: 0, 
-//         right: 0, 
-//         display: 'flex', 
-//         justifyContent: 'space-between',
-//         transform: 'translateY(-50%)'
-//       }}>
-//         <IconButton 
-//           onClick={handleBack}
-//           sx={{ 
-//             backgroundColor: 'rgba(255, 255, 255, 0.6)', 
-//             '&:hover': { backgroundColor: 'rgba(255, 255, 255, 0.8)' }, 
-//             ml: 1 
-//           }}
-//           size="large"
-//         >
-//           <KeyboardArrowLeft />
-//         </IconButton>
-//         <IconButton 
-//           onClick={handleNext}
-//           sx={{ 
-//             backgroundColor: 'rgba(255, 255, 255, 0.6)', 
-//             '&:hover': { backgroundColor: 'rgba(255, 255, 255, 0.8)' }, 
-//             mr: 1 
-//           }}
-//           size="large"
-//         >
-//           <KeyboardArrowRight />
-//         </IconButton>
-//       </Box>
+      const data = await response.json();
       
-//       <Box sx={{ 
-//         display: 'flex', 
-//         justifyContent: 'center', 
-//         mt: 2 
-//       }}>
-//         {carouselItems.map((_, index) => (
-//           <Button
-//             key={index}
-//             sx={{
-//               minWidth: 'auto',
-//               p: 0.5,
-//               m: 0.5,
-//               width: 12,
-//               height: 12,
-//               borderRadius: '50%',
-//               backgroundColor: index === activeStep ? 'primary.main' : 'grey.300',
-//             }}
-//             onClick={() => handleStepChange(index)}
-//           />
-//         ))}
-//       </Box>
-//     </Box>
-//   );
-// };
+      if (data.error) {
+        setError(data.error);
+        setChatHistory([...newChatHistory, { type: 'bot', message: `Error: ${data.error}` }]);
+      } else if (data.images && data.images.length > 0) {
+        setImages(data.images);
+        setChatHistory([...newChatHistory, { 
+          type: 'bot', 
+          message: 'Here are some recommendations based on your search:',
+          images: data.images
+        }]);
+      } else {
+        setImages([]);
+        setChatHistory([...newChatHistory, { type: 'bot', message: 'No results found for your query. Try describing the style differently.' }]);
+      }
+    } catch (err) {
+      console.error('Error:', err);
+      setError('An error occurred while fetching results.');
+      setChatHistory([...newChatHistory, { type: 'bot', message: 'An error occurred while fetching results. Please try again later.' }]);
+    } finally {
+      setLoading(false);
+      setQuery('');
+    }
+  };
 
+  const handleKeyPress = (e) => {
+    if (e.key === 'Enter') {
+      performSearch();
+    }
+  };
+
+  return (
+    <Dialog
+      open={open}
+      TransitionComponent={Transition}
+      keepMounted
+      onClose={onClose}
+      aria-describedby="image-recommender-chat"
+      maxWidth="sm"
+      fullWidth
+    >
+      <DialogTitle sx={{ 
+        display: 'flex', 
+        justifyContent: 'space-between', 
+        alignItems: 'center',
+        borderBottom: '1px solid #e0e0e0'
+      }}>
+        <Box display="flex" alignItems="center">
+          <Chat color="primary" sx={{ mr: 1 }} />
+          <Typography variant="h6">Fashion AI Assistant</Typography>
+        </Box>
+        <IconButton edge="end" color="inherit" onClick={onClose} aria-label="close">
+          <Close />
+        </IconButton>
+      </DialogTitle>
+      <DialogContent sx={{ p: 0, display: 'flex', flexDirection: 'column', height: '60vh' }}>
+        {/* Chat messages area */}
+        <Box 
+          sx={{ 
+            flexGrow: 1, 
+            overflowY: 'auto', 
+            p: 2,
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 2
+          }}
+        >
+          {chatHistory.map((chat, index) => (
+            <Box 
+              key={index} 
+              sx={{
+                display: 'flex',
+                justifyContent: chat.type === 'user' ? 'flex-end' : 'flex-start',
+                mb: 1
+              }}
+            >
+              <Box 
+                sx={{
+                  maxWidth: '70%',
+                  p: 2,
+                  borderRadius: 2,
+                  bgcolor: chat.type === 'user' ? 'primary.main' : 'grey.100',
+                  color: chat.type === 'user' ? 'white' : 'text.primary',
+                  ...(chat.type === 'user' 
+                    ? { borderBottomRightRadius: 0 } 
+                    : { borderBottomLeftRadius: 0 })
+                }}
+              >
+                <Typography variant="body1">{chat.message}</Typography>
+                
+                {chat.images && (
+                  <Grid container spacing={1} sx={{ mt: 1 }}>
+                    {chat.images.map((image, imgIndex) => (
+                      <Grid item xs={6} key={imgIndex}>
+                        <Card sx={{ position: 'relative' }}>
+                          <CardMedia
+                            component="img"
+                            image={image.image}
+                            alt={`Recommendation ${imgIndex + 1}`}
+                            sx={{ height: 120, objectFit: 'cover' }}
+                          />
+                          <Box
+                            sx={{
+                              position: 'absolute',
+                              bottom: 0,
+                              left: 0,
+                              right: 0,
+                              bgcolor: 'rgba(0, 0, 0, 0.6)',
+                              color: 'white',
+                              p: 0.5,
+                              fontSize: '0.75rem',
+                              textAlign: 'center'
+                            }}
+                          >
+                            Similarity: {(1 - image.distance).toFixed(2)}
+                          </Box>
+                        </Card>
+                      </Grid>
+                    ))}
+                  </Grid>
+                )}
+              </Box>
+            </Box>
+          ))}
+          
+          {loading && (
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, px: 2 }}>
+              <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: 'grey.400', animation: 'pulse 1s infinite' }}></Box>
+              <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: 'grey.400', animation: 'pulse 1s infinite 0.2s' }}></Box>
+              <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: 'grey.400', animation: 'pulse 1s infinite 0.4s' }}></Box>
+              <style jsx>{`
+                @keyframes pulse {
+                  0%, 100% { opacity: 0.5; }
+                  50% { opacity: 1; }
+                }
+              `}</style>
+            </Box>
+          )}
+        </Box>
+        
+        {/* Input area */}
+        <Box sx={{ 
+          p: 2, 
+          borderTop: '1px solid #e0e0e0',
+          display: 'flex',
+          alignItems: 'center',
+          gap: 1 
+        }}>
+          <TextField
+            fullWidth
+            variant="outlined"
+            placeholder="Describe what you're looking for..."
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            onKeyPress={handleKeyPress}
+            size="small"
+            InputProps={{
+              endAdornment: (
+                <InputAdornment position="end">
+                  <IconButton 
+                    onClick={performSearch}
+                    disabled={!query.trim() || loading}
+                  >
+                    <Send color="primary" />
+                  </IconButton>
+                </InputAdornment>
+              ),
+            }}
+          />
+        </Box>
+      </DialogContent>
+    </Dialog>
+  );
+};
+
+// Carousel Component
 const Carousel = ({ carouselItems }) => {
   const [activeStep, setActiveStep] = useState(0);
   const maxSteps = carouselItems.length;
@@ -313,7 +401,7 @@ const Carousel = ({ carouselItems }) => {
     <Box sx={{ 
       width: '100%', 
       position: 'relative',
-      maxWidth: '100%' // Changed from 800px to full width
+      maxWidth: '100%'
     }}>
       {/* Hero Banner Carousel */}
       <Box sx={{ position: 'relative', mb: 4, overflow: 'hidden' }}>
@@ -325,7 +413,7 @@ const Carousel = ({ carouselItems }) => {
             objectFit: 'cover',
             transition: 'transform 0.5s ease'
           }}
-          src={carouselItems[activeStep].image} // Changed from [0] to [activeStep]
+          src={carouselItems[activeStep].image}
           alt={carouselItems[activeStep].title}
         />
         <Box
@@ -355,7 +443,7 @@ const Carousel = ({ carouselItems }) => {
         display: 'flex', 
         justifyContent: 'space-between',
         transform: 'translateY(-50%)',
-        px: { xs: 1, sm: 3 } // Add padding on smaller screens
+        px: { xs: 1, sm: 3 }
       }}>
         <IconButton 
           onClick={handleBack}
@@ -414,6 +502,7 @@ const UserDashboard = ({ username }) => {
   const [anchorEl, setAnchorEl] = useState(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [categoryFilter, setCategoryFilter] = useState('all');
+  const [chatOpen, setChatOpen] = useState(false);
   const navigate = useNavigate();
   
   // User menu handling
@@ -440,6 +529,15 @@ const UserDashboard = ({ username }) => {
     setDrawerOpen(open);
   };
 
+  // Chat dialog handling
+  const handleOpenChat = () => {
+    setChatOpen(true);
+  };
+
+  const handleCloseChat = () => {
+    setChatOpen(false);
+  };
+
   // Filter products by category
   const handleCategoryChange = (category) => {
     setCategoryFilter(category);
@@ -453,7 +551,6 @@ const UserDashboard = ({ username }) => {
   return (
     <div>
       {/* Navigation Bar */}
-      {/*-----------------------------------------------------------------------------------------------------------------------*/}
       <AppBar position="static" color="default" elevation={0} sx={{ borderBottom: '1px solid #e0e0e0' }}>
         <Toolbar>
           <IconButton
@@ -546,9 +643,6 @@ const UserDashboard = ({ username }) => {
         <MenuItem onClick={handleLogout}>Logout</MenuItem>
       </Menu>
       
-
-      {/*--------------------------------------------------------------------------------------------------------*/}
-
       {/* Mobile Navigation Drawer */}
       <Drawer
         anchor="left"
@@ -593,122 +687,123 @@ const UserDashboard = ({ username }) => {
       </Box>
       
       {/* AI Feature Highlight */}
-        <Container maxWidth="lg" sx={{ mb: 6 }}>
-          <Box
+      <Container maxWidth="lg" sx={{ mb: 6 }}>
+        <Box
+          sx={{
+            backgroundColor: '#f8f8f8',
+            p: { xs: 2, sm: 4 },
+            borderRadius: 2,
+            textAlign: 'center',
+            mb: 4
+          }}
+        >
+          <Typography 
+            variant="h4" 
+            component="h2" 
+            gutterBottom
             sx={{
-          backgroundColor: '#f8f8f8',
-          p: { xs: 2, sm: 4 }, // Responsive padding
-          borderRadius: 2,
-          textAlign: 'center',
-          mb: 4
+              fontSize: { xs: '1.75rem', sm: '2.125rem' }
             }}
           >
-            <Typography 
-          variant="h4" 
-          component="h2" 
-          gutterBottom
-          sx={{
-            fontSize: { xs: '1.75rem', sm: '2.125rem' } // Responsive font size
-          }}
-            >
-          Smart Fashion Recommendations
-            </Typography>
-            <Typography 
-          variant="body1" 
-          sx={{ 
-            mb: 3,
-            px: { xs: 1, sm: 2 } // Add horizontal padding on mobile
-          }}
-            >
-          Our AI-powered recommendation engine helps you find the perfect outfit combinations.
-            </Typography>
-            <Grid 
-          container 
-          spacing={{ xs: 3, sm: 5, md: 7 }} // Responsive spacing
-          justifyContent="center"
-            >
-          <Grid item xs={12} sm={6} md={5}>
-            <Card 
-              sx={{ 
-            height: '100%', 
-            display: 'flex', 
-            flexDirection: 'column',
-            mx: { xs: 1, sm: 0 } // Add margin on mobile
-              }}
-            >
-              <CardMedia
-            component="img"
-            image="/assets/ai-feature/image-left.png"
-            alt="AI Recommendation Example"
-            sx={{
-              height: { xs: 300, sm: 350, md: 420 } // Responsive height
+            Smart Fashion Recommendations
+          </Typography>
+          <Typography 
+            variant="body1" 
+            sx={{ 
+              mb: 3,
+              px: { xs: 1, sm: 2 }
             }}
-              />
-              <CardContent>
-            <Typography 
-              variant="h6" 
-              component="div"
-              sx={{
-                fontSize: { xs: '1.1rem', sm: '1.25rem' } // Responsive font size
-              }}
-            >
-              Product Recommendations
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              Discover items that perfectly complement your current selection
-            </Typography>
-              </CardContent>
-            </Card>
-          </Grid>
-          <Grid item xs={12} sm={6} md={5}>
-            <Card 
-              sx={{ 
-            height: '100%', 
-            display: 'flex', 
-            flexDirection: 'column',
-            mx: { xs: 1, sm: 0 } // Add margin on mobile
-              }}
-            >
-              <CardMedia
-            component="img"
-            image="/assets/ai-feature/image-right.png"
-            alt="Image Upload Feature"
-            sx={{
-              height: { xs: 300, sm: 350, md: 420 } // Responsive height
-            }}
-              />
-              <CardContent>
-            <Typography 
-              variant="h6" 
-              component="div"
-              sx={{
-                fontSize: { xs: '1.1rem', sm: '1.25rem' } // Responsive font size
-              }}
-            >
-              Image Upload Feature
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              Upload your own clothing image and get matching recommendations
-            </Typography>
-            <Box sx={{ mt: 2 }}>
-              <Button 
-                variant="outlined" 
-                size="small"
-                sx={{
-              width: { xs: '100%', sm: 'auto' } // Full width on mobile
+          >
+            Our AI-powered recommendation engine helps you find the perfect outfit combinations.
+          </Typography>
+          <Grid 
+            container 
+            spacing={{ xs: 3, sm: 5, md: 7 }}
+            justifyContent="center"
+          >
+            <Grid item xs={12} sm={6} md={5}>
+              <Card 
+                sx={{ 
+                  height: '100%', 
+                  display: 'flex', 
+                  flexDirection: 'column',
+                  mx: { xs: 1, sm: 0 }
                 }}
               >
-                Try it now
-              </Button>
-            </Box>
-              </CardContent>
-            </Card>
-          </Grid>
+                <CardMedia
+                  component="img"
+                  image="/assets/ai-feature/image-left.png"
+                  alt="AI Recommendation Example"
+                  sx={{
+                    height: { xs: 300, sm: 350, md: 420 }
+                  }}
+                />
+                <CardContent>
+                  <Typography 
+                    variant="h6" 
+                    component="div"
+                    sx={{
+                      fontSize: { xs: '1.1rem', sm: '1.25rem' }
+                    }}
+                  >
+                    Product Recommendations
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Discover items that perfectly complement your current selection
+                  </Typography>
+                </CardContent>
+              </Card>
             </Grid>
-          </Box>
-        </Container>
+            <Grid item xs={12} sm={6} md={5}>
+              <Card 
+                sx={{ 
+                  height: '100%', 
+                  display: 'flex', 
+                  flexDirection: 'column',
+                  mx: { xs: 1, sm: 0 }
+                }}
+              >
+                <CardMedia
+                  component="img"
+                  image="/assets/ai-feature/image-right.png"
+                  alt="Image Upload Feature"
+                  sx={{
+                    height: { xs: 300, sm: 350, md: 420 }
+                  }}
+                />
+                <CardContent>
+                  <Typography 
+                    variant="h6" 
+                    component="div"
+                    sx={{
+                      fontSize: { xs: '1.1rem', sm: '1.25rem' }
+                    }}
+                  >
+                    AI Style Assistant
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Chat with our AI to get personalized outfit recommendations
+                  </Typography>
+                  <Box sx={{ mt: 2 }}>
+                    <Button 
+                      variant="outlined" 
+                      size="small"
+                      sx={{
+                        width: { xs: '100%', sm: 'auto' }
+                      }}
+                      onClick={handleOpenChat}
+                    >
+                      Try it now
+                    </Button>
+                  </Box>
+                </CardContent>
+              </Card>
+            </Grid>
+          </Grid>
+        </Box>
+      </Container>
         
-        {/* Featured Products */}
+      {/* Featured Products */}
       <Container maxWidth="lg" sx={{ mb: 6 }}>
         <Typography
           variant="h4"
@@ -794,9 +889,9 @@ const UserDashboard = ({ username }) => {
             variant="outlined" 
             size="large"
             onClick={() => {
-              navigate('/user/all-products');
+              navigate('/all-products');
             }}          
-           >
+          >
             View All Products
           </Button>
         </Box>
@@ -906,6 +1001,24 @@ const UserDashboard = ({ username }) => {
           </Box>
         </Container>
       </Box>
+      
+      {/* Floating Chat Button */}
+      <Fab 
+        color="primary" 
+        aria-label="chat with ai"
+        onClick={handleOpenChat}
+        sx={{ 
+          position: 'fixed', 
+          bottom: 16, 
+          right: 16,
+          zIndex: 1000
+        }}
+      >
+        <Chat />
+      </Fab>
+      
+      {/* AI Chatbot Dialog */}
+      <ImageRecommenderChat open={chatOpen} onClose={handleCloseChat} />
     </div>
   );
 };
