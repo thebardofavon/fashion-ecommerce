@@ -153,7 +153,7 @@ const ProductInventory = ({ showViewMore = false }) => {
   const [category, setCategory] = useState("All");
   const navigate = useNavigate();
   const location = useLocation();
-  const isFullPage = location.pathname === "/products";
+  const isFullPage = location.pathname === "/admin/dashboard/products";
   
   const [products, setProducts] = useState(initialProductData);
   const [openDialog, setOpenDialog] = useState(false);
@@ -285,7 +285,7 @@ const ProductInventory = ({ showViewMore = false }) => {
             <Button
               variant="text"
               endIcon={<ArrowForwardIcon />}
-              onClick={() => navigate("/products")}
+              onClick={() => navigate("/admin/dashboard/products")}
               size="small"
             >
               View All Products

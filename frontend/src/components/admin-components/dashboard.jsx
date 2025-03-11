@@ -54,7 +54,7 @@ function Dashboard() {
           <Box sx={{ display: "flex", gap: 3 }}>
             <IconButton color="inherit"><FavoriteBorderOutlinedIcon /></IconButton>
             <IconButton color="inherit"><PersonOutlineOutlinedIcon /></IconButton>
-            <IconButton color="inherit"><Badge badgeContent={3} color="primary"><ShoppingBagOutlinedIcon /></Badge></IconButton>
+            {/* <IconButton color="inherit"><Badge badgeContent={3} color="primary"><ShoppingBagOutlinedIcon /></Badge></IconButton> */}
           </Box>
         </Toolbar>
       </AppBar>
@@ -64,7 +64,7 @@ function Dashboard() {
         <Box component="main" sx={{ flexGrow: 1, p: 3, bgcolor: "#f8f8f8" }}>
           <Container maxWidth={false}>
             <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 3 }}>
-              <Typography variant="h5" sx={{ fontWeight: 500 }}>Dashboard Overview</Typography>
+              {/* <Typography variant="h5" sx={{ fontWeight: 500 }}>Dashboard Overview</Typography> */}
               <Box sx={{ display: "flex", gap: 1 }}>
                 <Avatar sx={{ bgcolor: "#fff", color: "#000", width: 32, height: 32, fontSize: "0.875rem" }}>T</Avatar>
                 <Typography variant="body2" sx={{ alignSelf: "center" }}>Admin</Typography>

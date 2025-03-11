@@ -21,7 +21,7 @@ const chartData = [
 const AnalyticsOverview = ({ showViewMore = false }) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const isFullAnalytics = location.pathname === "/analytics"; // Check if user is on analytics page
+  const isFullAnalytics = location.pathname === "/admin/dashboard/analytics"; // Check if user is on analytics page
 
   return (
     <Box
@@ -48,7 +48,7 @@ const AnalyticsOverview = ({ showViewMore = false }) => {
           <Button
             variant="text"
             endIcon={<ArrowForwardIcon />}
-            onClick={() => navigate("/analytics")}
+            onClick={() => navigate("/admin/dashboard/analytics")}
             size="small"
           >
             View Full Analytics

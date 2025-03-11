@@ -167,7 +167,7 @@ const ImageRecommenderChat = ({ open, onClose }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [chatHistory, setChatHistory] = useState([
-    { type: 'bot', message: 'Hello! I can help you find similar outfits. Describe what you\'re looking for or upload an image.' }
+    { type: 'bot', message: 'Hello! I can help you find similar outfits. Describe what you\'re looking for.' }
   ]);
 
   const performSearch = async () => {
@@ -598,7 +598,7 @@ const UserDashboard = ({ username }) => {
                 <Favorite />
               </Badge>
             </IconButton>
-            <IconButton color="inherit">
+            <IconButton color="inherit" onClick={() => navigate('/user/temp')}>
               <Badge badgeContent={cartItems} color="error">
                 <ShoppingCart />
               </Badge>
@@ -771,7 +771,7 @@ const UserDashboard = ({ username }) => {
                     height: { xs: 300, sm: 350, md: 420 }
                   }}
                 />
-                <CardContent>
+                {/* <CardContent>
                   <Typography 
                     variant="h6" 
                     component="div"
@@ -796,7 +796,25 @@ const UserDashboard = ({ username }) => {
                       Try it now
                     </Button>
                   </Box>
-                </CardContent>
+                </CardContent> */}
+                <CardContent>
+                    <Typography variant="h6" component="div">
+                      Image Upload Feature
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      Upload your own clothing image and get matching recommendations
+                    </Typography>
+                    <Box sx={{ mt: 2 }}>
+                      <Button 
+                        variant="outlined" 
+                        size="small"
+                        onClick={() => {
+                          navigate('/recommend/image');
+                        }}>
+                        Try it now
+                      </Button>
+                    </Box>
+                  </CardContent>
               </Card>
             </Grid>
           </Grid>
