@@ -11,8 +11,8 @@ loginRouter.post("/user", async (request, response) => {
     const { username, password } = request.body;
 
     const query = "SELECT * FROM user WHERE username=?";
-
-    const [userWithUsername] = await dbConn.query(query, [username]);
+    const [rows] = await dbConn.query(query, [username]); // Destructure rows from the result
+    const userWithUsername = rows[0]; // Get the first user
 
     if (!userWithUsername) {
         return response.status(401).json({
@@ -20,6 +20,7 @@ loginRouter.post("/user", async (request, response) => {
         });
     }
 
+    // Now userWithUsername is correctly the first row from the query result
     const passwordCorrect = await bcrypt.compare(
         password,
         userWithUsername.password_hash
@@ -52,8 +53,8 @@ loginRouter.post("/admin", async (request, response) => {
     const { username, password } = request.body;
 
     const query = "SELECT * FROM administrator WHERE username=?";
-
-    const [administratorWithUsername] = await dbConn.query(query, [username]);
+    const [rows] = await dbConn.query(query, [username]); // Destructure rows
+    const administratorWithUsername = rows[0]; // Get the first admin
 
     if (!administratorWithUsername) {
         return response.status(401).json({
@@ -61,6 +62,7 @@ loginRouter.post("/admin", async (request, response) => {
         });
     }
 
+    // Now administratorWithUsername is correctly the first row
     const passwordCorrect = await bcrypt.compare(
         password,
         administratorWithUsername.password_hash

@@ -6,105 +6,97 @@ const dbConn = require("../utils/db");
 const jwt = require("jsonwebtoken");
 const validator = require("email-validator");
 
-// https://stackoverflow.com/questions/46693430/what-are-salt-rounds-and-how-are-salts-stored-in-bcrypt
-// TODO Display warning on frontend that password and security_answer cannot be padded with spaces
-
+// Create a new administrator
 adminRouter.post("/", async (request, response) => {
-    let { username, email, password, security_question, security_answer } =
-        request.body;
+    let { username, email, password, security_question, security_answer } = request.body;
 
-    if (
-        !username ||
-        !password ||
-        !email ||
-        !security_question ||
-        !security_answer
-    ) {
+    // Validate required fields
+    if (!username || !password || !email || !security_question || !security_answer) {
         return response.status(400).json({
-            error: "username, email, password, security_question or security_answer missing in request body",
+            error: "username, email, password, security_question, or security_answer missing in request body",
         });
     }
 
+    // Trim input fields
     username = username.trim();
     password = password.trim();
     email = email.trim();
     security_question = security_question.trim();
     security_answer = security_answer.trim();
 
-    if (!username || username.length < 3 || !password || password.length < 3) {
+    // Validate input lengths
+    if (username.length < 3 || password.length < 3) {
         return response.status(400).json({
-            error: "username and password should each be at least 3 characters long",
+            error: "username and password must each be at least 3 characters long",
         });
     }
 
-    if (!email || !validator.validate(email)) {
+    if (!validator.validate(email)) {
         return response.status(400).json({
             error: "Invalid email",
         });
     }
 
-    if (!security_question || security_question.length < 10) {
+    if (security_question.length < 10) {
         return response.status(400).json({
-            error: "security_question should be at least 10 characters long",
+            error: "security_question must be at least 10 characters long",
         });
     }
 
-    if (!security_answer || security_answer.length < 3) {
+    if (security_answer.length < 3) {
         return response.status(400).json({
-            error: "security_answer should be at least 3 characters long",
+            error: "security_answer must be at least 3 characters long",
         });
     }
 
-    const administratorWithUsername = await dbConn.query(
+    // Check for existing username
+    const [adminUserRows] = await dbConn.query(
         "SELECT * FROM administrator WHERE username=?",
         [username]
     );
-
-    if (administratorWithUsername.length !== 0) {
+    if (adminUserRows.length !== 0) {
         return response.status(409).json({
             error: "An administrator with that username already exists",
         });
     }
 
-    const administratorWithEmail = await dbConn.query(
+    // Check for existing email
+    const [adminEmailRows] = await dbConn.query(
         "SELECT * FROM administrator WHERE email=?",
         [email]
     );
-
-    if (administratorWithEmail.length !== 0) {
+    if (adminEmailRows.length !== 0) {
         return response.status(409).json({
             error: "An administrator with that email already exists",
         });
     }
 
+    // Hash password and security answer
     const saltRounds = 10;
     const passwordHash = await bcrypt.hash(password, saltRounds);
     const securityAnswerHash = await bcrypt.hash(security_answer, saltRounds);
 
-    const query =
-        "INSERT INTO administrator (username, email, password_hash, security_question, security_answer_hash) VALUES (?, ?, ?, ?, ?)";
-
-    await dbConn.query(query, [
-        username,
-        email,
-        passwordHash,
-        security_question,
-        securityAnswerHash,
-    ]);
+    // Insert new administrator
+    await dbConn.query(
+        "INSERT INTO administrator (username, email, password_hash, security_question, security_answer_hash) VALUES (?, ?, ?, ?, ?)",
+        [username, email, passwordHash, security_question, securityAnswerHash]
+    );
 
     return response.status(201).end();
 });
 
+// Get all administrators
 adminRouter.get("/", async (request, response) => {
-    const query = "SELECT username, email FROM administrator";
-    const qres = await dbConn.query(query);
-    response.json(qres);
+    const [rows] = await dbConn.query("SELECT username, email FROM administrator");
+    response.json(rows);
 });
 
+// Change password for an administrator
 adminRouter.post("/changepassword", async (request, response) => {
     const administrator = request.administrator;
     let { new_password, current_password } = request.body;
 
+    // Validate new password
     if (!new_password) {
         return response.status(400).json({
             error: "new_password not provided",
@@ -113,24 +105,29 @@ adminRouter.post("/changepassword", async (request, response) => {
     new_password = new_password.trim();
     if (new_password.length < 3) {
         return response.status(400).json({
-            error: "new_password should be at least three characters long",
+            error: "new_password must be at least 3 characters long",
         });
-    } else if (!current_password) {
+    }
+
+    // Validate current password
+    if (!current_password) {
         return response.status(400).json({
             error: "current_password not provided",
         });
     }
 
+    // Verify current password
     const passwordCorrect = await bcrypt.compare(
         current_password,
         administrator.password_hash
     );
-
     if (!passwordCorrect) {
         return response.status(400).json({
             error: "Incorrect current_password",
         });
     }
+
+    // Hash new password and update
     const saltRounds = 10;
     const newPasswordHash = await bcrypt.hash(new_password, saltRounds);
     await dbConn.query(
@@ -141,137 +138,100 @@ adminRouter.post("/changepassword", async (request, response) => {
     return response.status(200).end();
 });
 
+// Update an administrator
 adminRouter.put("/:username", async (request, response) => {
     const { username } = request.params;
-    let { new_username, email, password, security_question, security_answer } =
-        request.body;
+    let { new_username, email, password, security_question, security_answer } = request.body;
 
-    const adminSearch = dbConn.query(
-        "SELECT username, email, security_question, security_answer_hash FROM administrator WHERE username=?",
+    // Fetch existing administrator
+    const [adminSearch] = await dbConn.query(
+        "SELECT * FROM administrator WHERE username=?",
         [username]
     );
     if (adminSearch.length === 0) {
-        return response.status(400).json({
-            error: "An administrator with the username given in the request parameters does not exist.",
+        return response.status(404).json({
+            error: "Administrator not found",
         });
     }
-
     const administrator = adminSearch[0];
 
-    if (!new_username) {
-        return response.status(400).json({
-            error: "username missing in request body",
-        });
-    }
-
-    if (!password) {
-        return response.status(400).json({
-            error: "password missing in request body",
-        });
-    }
-
-    if (!email) {
-        return response.status(400).json({
-            error: "email missing in request body",
-        });
-    }
-
-    if (!security_question) {
-        return response.status(400).json({
-            error: "security_question missing in request body",
-        });
-    }
-
-    if (!security_answer) {
-        return response.status(400).json({
-            error: "security_answer missing in request body",
-        });
-    }
-
-    new_username = new_username.trim();
-    password = password.trim();
-    email = email.trim();
-    security_question = security_question.trim();
-    security_answer = security_answer.trim();
-
+    // Validate new username
     if (!new_username || new_username.length < 3) {
         return response.status(400).json({
             error: "new_username must be at least 3 characters long",
         });
     }
 
-    if (!password || password.length < 3) {
-        return response.status(400).json({
-            error: "password must be at least 3 characters long",
+    // Check for username conflict
+    const [usernameRows] = await dbConn.query(
+        "SELECT * FROM administrator WHERE username=?",
+        [new_username]
+    );
+    if (username !== new_username && usernameRows.length !== 0) {
+        return response.status(409).json({
+            error: `Username ${new_username} already exists`,
         });
     }
 
+    // Validate email
     if (!email || !validator.validate(email)) {
         return response.status(400).json({
             error: "Invalid email",
         });
     }
 
-    if (!security_question || security_question.length < 10) {
-        return response.status(400).json({
-            error: "security_question should be at least 10 characters long",
-        });
-    }
-
-    if (!security_answer || security_answer.length < 3) {
-        return response.status(400).json({
-            error: "security_answer should be at least 3 characters long",
-        });
-    }
-
-    const administratorWithUsername = await dbConn.query(
-        "SELECT * FROM administrator WHERE username=?",
-        [new_username]
-    );
-
-    if (username !== new_username && administratorWithUsername.length !== 0) {
-        return response.status(409).json({
-            error: `An administrator with username ${new_username} already exists`,
-        });
-    }
-
-    const administratorWithEmail = await dbConn.query(
+    // Check for email conflict
+    const [emailRows] = await dbConn.query(
         "SELECT * FROM administrator WHERE email=?",
         [email]
     );
-
-    if (administrator.email !== email && administratorWithEmail.length !== 0) {
+    if (administrator.email !== email && emailRows.length !== 0) {
         return response.status(409).json({
             error: "An administrator with that email already exists",
         });
     }
 
+    // Validate password
+    if (!password || password.length < 3) {
+        return response.status(400).json({
+            error: "password must be at least 3 characters long",
+        });
+    }
+
+    // Validate security question and answer
+    if (!security_question || security_question.length < 10) {
+        return response.status(400).json({
+            error: "security_question must be at least 10 characters long",
+        });
+    }
+    if (!security_answer || security_answer.length < 3) {
+        return response.status(400).json({
+            error: "security_answer must be at least 3 characters long",
+        });
+    }
+
+    // Hash password and security answer
     const saltRounds = 10;
     const passwordHash = await bcrypt.hash(password, saltRounds);
     const securityAnswerHash = await bcrypt.hash(security_answer, saltRounds);
 
+    // Update administrator
     await dbConn.query(
         "UPDATE administrator SET username=?, password_hash=?, email=?, security_question=?, security_answer_hash=? WHERE username=?",
-        [
-            new_username,
-            passwordHash,
-            email,
-            securityAnswerHash,
-            username,
-        ]
+        [new_username, passwordHash, email, security_question, securityAnswerHash, username]
     );
+
     return response.status(200).end();
 });
 
+// Delete an administrator
 adminRouter.delete("/:username", async (request, response) => {
     if (!request.administrator) {
         return response.status(403).end();
     }
 
     const { username } = request.params;
-    await dbConn.query("DELETE FROM administrator WHERE username=?", [
-        username,
-    ]);
+    await dbConn.query("DELETE FROM administrator WHERE username=?", [username]);
     return response.status(204).end();
 });
 
